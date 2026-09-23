@@ -221,6 +221,12 @@ except KeyboardInterrupt:
 # Результат работы сканера на примере scanme.nmap.org:
 <img width="683" height="341" alt="image" src="https://github.com/user-attachments/assets/f88177c7-3fd8-412f-8dad-5a4d26c87a23" />
 
+# Результат работы сканера на примере vk.ru (работает по протоколу https):
+<img width="679" height="305" alt="image" src="https://github.com/user-attachments/assets/c4d0a8a9-4a73-4475-923b-1e5218144694" />
+
+
+# Результат сканирования Windows 10:
+
 
     
 
