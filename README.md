@@ -19,7 +19,9 @@ host_target = input("Введите ip-адрес хоста или его до�
 
 # Составляем список популярных сетевых портов (PS: этот список словарей можно расширять сколько нашей душе угодно)
 
-POPULAR_PORTS = [
+POPULAR_PORTS = 
+
+[
 
     #Веб
     {"port": 80, "name": "HTTP", "protocol": "TCP", "description": "Передача веб-страниц (незащищенный)"},
@@ -68,9 +70,7 @@ POPULAR_PORTS = [
     {"port": 445, "name": "SMB", "description": "Общие папки и принтеры Windows (Файловый доступ)"},
     {"port": 3389, "name": "RDP", "description": "Удаленный рабочий стол Windows"},
     {"port": 5985, "name": "WinRM (HTTP)", "description": "Удаленное управление PowerShell"},
-    {"port": 5986, "name": "WinRM (HTTPS)", "description": "Защищенное удаленное управление PowerShell"}
-    
-]
+    {"port": 5986, "name": "WinRM (HTTPS)", "description": "Защищенное удаленное управление PowerShell"}]
 
 # порты на которых расположен http
 HTTP_PORTS=[80, 8080]
