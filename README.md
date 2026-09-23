@@ -1,11 +1,18 @@
-import socket
-import logging
-from datetime import datetime
-import ssl
-import re
-logging.basicConfig(level=logging.INFO, format="%(message)s")
-host_target = input("Введите ip-адрес хоста или его доменное имя: ")
+# Скрипт инвентаризации хостов предназначен для пассивного сканирования состояния хоста в нашей корпоративной сети, показывает, какие сетевые порты открыты + версии сетевых протоколах, которые как раз таки расположены на этих открытых портах. В перспективе можно написать в скрипте функцию пассивного сканирования для более полного понимания, какие возможные атаки можно провести на наш хост для закрытия этих уяз. Ну а теперь давайте приступим к разбору полетов (конкретно к нашему программному коду).
+# Для начала дайте рассмотрим библиотеки, которые мы импортировали для дальнейшей работы нашей программы:
 
+import socket - для создания сокетов , т.е подключения между нашим и удаленным хостом, который мы хотим просканировать
+import logging - для просмотра логов
+from datetime import datetime - для фиксации времени начала и конца сканирования для подсчета общего вермени работы
+import ssl - для создания безопасной оболочки ssl для того, чтобы программа нам выводила версии web-серверов, если запросы от сервера у нас принимаются по протоколу https
+import re - для работы с регулярными выражениями
+
+# Далее задаем базовый формат вывода нашего лога:
+logging.basicConfig(level=logging.INFO, format="%(message)s") # выводит информационные сообщения формата message
+# Тут мы вводим либо доменное имя, либо ip-адрес хоста, который мы хоти просканировать
+host_target = input("Введите ip-адрес хоста или его доменное имя: ") 
+
+# Составляем список популярных сетевых портов (PS: этот список словарей можно расширять сколько нашей душе угодно)
 POPULAR_PORTS = [
     #Веб
     {"port": 80, "name": "HTTP", "protocol": "TCP", "description": "Передача веб-страниц (незащищенный)"},
@@ -41,7 +48,7 @@ POPULAR_PORTS = [
     {"port": 27017, "name": "MongoDB", "protocol": "TCP", "description": "NoSQL база данных MongoDB"},
     {"port": 6379, "name": "Redis", "protocol": "TCP", "description": "Хранилище ключ-значение в памяти"},
 
-    # --- Инфраструктура и сеть ---
+    # Инфраструктура и сеть
     {"port": 53, "name": "DNS", "protocol": "TCP/UDP", "description": "Преобразование доменных имен в IP"},
     {"port": 67, "name": "DHCP-Server", "protocol": "UDP", "description": "Выдача IP-адресов (сервер)"},
     {"port": 68, "name": "DHCP-Client", "protocol": "UDP", "description": "Получение IP-адресов (клиент)"},
@@ -51,10 +58,10 @@ POPULAR_PORTS = [
     {"port": 636, "name": "LDAPS", "protocol": "TCP", "description": "Защищенный LDAP (SSL/TLS)"},
     {"port": 514, "name": "Syslog", "protocol": "UDP", "description": "Системные логи (передача)"},
     
-    # --- Прочее ---
+    # Прочее
     {"port": 1900, "name": "SSDP", "protocol": "UDP", "description": "Обнаружение устройств (UPnP)"},
     {"port": 5353, "name": "mDNS", "protocol": "UDP", "description": "Мультикаст DNS (Bonjour, Avahi)"},
-     # --- Windows ---
+     # Windows
     {"port": 135, "name": "MS-RPC", "description": "Диспетчер удаленного вызова процедур Windows"},
     {"port": 139, "name": "NetBIOS-SSN", "description": "Служба сессий NetBIOS"},
     {"port": 445, "name": "SMB", "description": "Общие папки и принтеры Windows (Файловый доступ)"},
@@ -62,34 +69,51 @@ POPULAR_PORTS = [
     {"port": 5985, "name": "WinRM (HTTP)", "description": "Удаленное управление PowerShell"},
     {"port": 5986, "name": "WinRM (HTTPS)", "description": "Защищенное удаленное управление PowerShell"}
 ]
+# порты на которых расположен http
 HTTP_PORTS=[80, 8080]
+# порты на которых расположен https
+# PS: Это разделение необходимо для дальнейшей работы, чтобы если мы работали с http, он создавал обычный сокет, а если https, то мы создаем сокет с так называемой ssl оболочкой для безопасного подключения.
 SSL_HTTP_PORTS=[443, 8443]
-ssl_context=ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-ssl_context.check_hostname=False
+# Создаем контекст SSL, мы обозначаем при помощи параметра ssl.PROTOCOL_TLS_CLIENT, что мы клиент и мы подключаемся к серверу по TLS:
+ssl_context=ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT) # 
+# Отключаем проверку сертификата, т.к. мы должны сканировать порты
+ssl_context.check_hostname=False 
 ssl_context.verify_mode=ssl.CERT_NONE
-only_ports = [item["port"] for item in POPULAR_PORTS]
+# В список оnly_ports из списка POPULAR_PORTS записываем только ключ port:
+only_ports = [item["port"] for item in POPULAR_PORTS] #
 print("Список портов для сканирования:", only_ports)
+
+# При помощи socket.gethostbyname переводи доменное имя хоста в ip-адрес при необходимости, если же мы вводи ip-адрес, то эта встроенная функция тоже работает корректно.
 
 try:
     target_ip = socket.gethostbyname(host_target)
     logging.info(f"Начинаем сканирование хоста: {host_target} ({target_ip})")
     logging.info("-" * 50)
+    
+# Фиксируем время работы начала сканирования при помощи datetime.now()    
+
     start_time = datetime.now()
+# Циклом for проходим по всем портам из списка и создаем сокет (важный момент: указываем параметр socket.AF_INET для работы c ipv4 и socket.SOCK_STREAM для работы с протоколом tcp) и пихаем это все в переменную sock
     for target_port in only_ports:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+# Ждем 2 секунды для подключения        
             sock.settimeout(2.0)
-            result = sock.connect_ex((target_ip, target_port))
-            
+# sock.connect_ex позволяет вывести стату подключения по целевому ip-адресу + целевому порту
+# PS: При выводе 0 означает, что подключение выполнено успешно
+            result = sock.connect_ex((target_ip, target_port))          
             if result == 0:
                 service_info = "нет данных"
                 try:
-                    service_info = socket.getservbyport(target_port, 'tcp')
+# Чрез socket.getservbyport получаем информацию о сервисе (сетевом протоколе), расположенные на целевом порту            
+                    service_info = socket.getservbyport(target_port, 'tcp')                    
                 except OSError:
                     pass
-                
+# Далее создаем переменную banner для записи в нее версии web-сервера                
                 banner = ""
+#  sock.recv(1024) обозначает сколько байтс вернет сервер при успешном принятии запроса               
                 try:
                     banner_bytes = sock.recv(1024)
+# Если он что-то вернул, то декодирует эту всю шнягу в привычный для нас формат utf-8 и при помощи strip() удаляем в выводе пробельные символы                    
                     if banner_bytes:
                         banner = banner_bytes.decode('utf-8', errors='ignore').strip() 
                 except socket.timeout:
@@ -146,4 +170,6 @@ except socket.gaierror:
     logging.error("Ошибка: Не удалось разрешить имя хоста (проверьте DNS или интернет).")
 except KeyboardInterrupt:
     logging.warning("\nСканирование прервано пользователем.")
+
+
 
