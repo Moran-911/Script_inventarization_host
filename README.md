@@ -69,6 +69,7 @@ POPULAR_PORTS = [
     {"port": 3389, "name": "RDP", "description": "Удаленный рабочий стол Windows"},
     {"port": 5985, "name": "WinRM (HTTP)", "description": "Удаленное управление PowerShell"},
     {"port": 5986, "name": "WinRM (HTTPS)", "description": "Защищенное удаленное управление PowerShell"}
+    
 ]
 
 # порты на которых расположен http
