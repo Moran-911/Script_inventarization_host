@@ -226,6 +226,9 @@ except KeyboardInterrupt:
 
 
 # Результат сканирования Windows 10:
+<img width="509" height="385" alt="image" src="https://github.com/user-attachments/assets/389e785a-4262-4a0a-8955-89b5520a9f7c" />
+
+<img width="679" height="385" alt="image" src="https://github.com/user-attachments/assets/40036a10-6a37-454a-bfc3-614eedde24ec" />
 
 
     
