@@ -20,10 +20,7 @@ host_target = input("Введите ip-адрес хоста или его до�
 # Составляем список популярных сетевых портов (PS: этот список словарей можно расширять сколько нашей душе угодно)
 
 POPULAR_PORTS = 
-
-[
-
-    #Веб
+    [#Веб
     {"port": 80, "name": "HTTP", "protocol": "TCP", "description": "Передача веб-страниц (незащищенный)"},
     {"port": 443, "name": "HTTPS", "protocol": "TCP", "description": "Защищенная передача веб-страниц (SSL/TLS)"},
     {"port": 8080, "name": "HTTP-Alt", "protocol": "TCP", "description": "Альтернативный HTTP (часто прокси, Tomcat)"},
