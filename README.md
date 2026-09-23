@@ -112,7 +112,7 @@ try:
 
             sock.settimeout(2.0)
             
-# sock.connect_ex позволяет вывести стату подключения по целевому ip-адресу + целевому порту
+# sock.connect_ex позволяет вывести статус подключения по целевому ip-адресу + целевому порту
 
 PS: При выводе 0 означает, что подключение выполнено успешно
 
@@ -216,6 +216,13 @@ except socket.gaierror:
     logging.error("Ошибка: Не удалось разрешить имя хоста (проверьте DNS или интернет).")
 except KeyboardInterrupt:
     logging.warning("\nСканирование прервано пользователем.")
+
+
+# Результат работы сканера на примере scanme.nmap.org:
+<img width="683" height="341" alt="image" src="https://github.com/user-attachments/assets/f88177c7-3fd8-412f-8dad-5a4d26c87a23" />
+
+
+    
 
 
 
