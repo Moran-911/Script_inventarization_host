@@ -18,8 +18,8 @@ logging.basicConfig(level=logging.INFO, format="%(message)s") # выводит �
 host_target = input("Введите ip-адрес хоста или его доменное имя: ")
 
 # Составляем список популярных сетевых портов (PS: этот список словарей можно расширять сколько нашей душе угодно)
-
 POPULAR_PORTS = 
+    
     [#Веб
     {"port": 80, "name": "HTTP", "protocol": "TCP", "description": "Передача веб-страниц (незащищенный)"},
     {"port": 443, "name": "HTTPS", "protocol": "TCP", "description": "Защищенная передача веб-страниц (SSL/TLS)"},
